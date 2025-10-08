@@ -40,3 +40,14 @@ Accept: application/json
 GET {{HostAddressRoot}}/api/itineraries/1/stops
 Accept: application/json 
  
+###
+GET https://devstdevcutravel.table.core.windows.net/Destinations?sp=r&st=2025-10-08T11:26:53Z&se=2025-10-08T19:41:53Z&spr=https&sv=2024-11-04&sig=RKwRYnyxWRvYndRYK%2BL2b1yyS4oCCUDLQmMPftcyE6U%3D&tn=Destinations
+Accept: application/json
+
+### With Filters
+GET https://devstdevcutravel.table.core.windows.net/Destinations?$filter=(Identifier%20ge%20'2')&$select=Identifier,Name&sp=r&st=2025-10-08T11:26:53Z&se=2025-10-08T19:41:53Z&spr=https&sv=2024-11-04&sig=RKwRYnyxWRvYndRYK%2BL2b1yyS4oCCUDLQmMPftcyE6U%3D&tn=Destinations
+Accept: application/json
+
+### With Sepcific Columns
+GET https://devstdevcutravel.table.core.windows.net/Destinations?$select=Identifier,Name&sp=r&st=2025-10-08T11:26:53Z&se=2025-10-08T19:41:53Z&spr=https&sv=2024-11-04&sig=RKwRYnyxWRvYndRYK%2BL2b1yyS4oCCUDLQmMPftcyE6U%3D&tn=Destinations
+Accept: application/json
