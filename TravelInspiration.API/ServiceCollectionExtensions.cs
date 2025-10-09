@@ -2,6 +2,7 @@
 using Azure.Data.Tables;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Reflection;
 using TravelInspiration.API.Shared.Behaviours;
@@ -45,7 +46,7 @@ public static class ServiceCollectionExtensions
             //var credentials = new AzureSasCredential(configuration.GetValue<string>("Azure:SASCredential"));
             //var uri = new Uri(configuration.GetValue<string>("Azure:SASCredential"));
             //return new TableServiceClient(uri, credentials);
-            return new TableServiceClient("TravelInspirationTableStorageConnection");
+            return new TableServiceClient(configuration.GetConnectionString("TravelInspirationTableStorageConnection"));
         });
 
         return services;

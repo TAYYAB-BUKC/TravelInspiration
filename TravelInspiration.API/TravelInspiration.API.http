@@ -1,6 +1,6 @@
 @HostAddressRoot = https://localhost:7293
 
-GET {{HostAddressRoot}}/api/destinations?searchFor=San
+GET {{HostAddressRoot}}/api/destinations?searchFor=San%20Francisco,%20USA
 Accept: application/json
 
 ###
