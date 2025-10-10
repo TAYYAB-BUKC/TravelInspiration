@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,6 +50,11 @@ public static class ServiceCollectionExtensions
             return new TableServiceClient(configuration.GetConnectionString("TravelInspirationTableStorageConnection"));
         });
 
-        return services;
+		services.AddScoped(sp =>
+		{
+			return new BlobServiceClient(configuration.GetConnectionString("TravelInspirationTableStorageConnection"));
+		});
+
+		return services;
     }
 }
