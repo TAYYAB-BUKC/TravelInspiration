@@ -1,6 +1,6 @@
 ﻿using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using MediatR;
-using TravelInspiration.API.Shared.Domain.Models;
 using TravelInspiration.API.Shared.Slices;
 
 namespace TravelInspiration.API.Features.Destinations;
@@ -30,14 +30,16 @@ public sealed class SearchDestinations : ISlice
         public required int Id { get; set; }
         public required string Name { get; set; }
         //public required string ImageName { get; set; }
-    }
+        public List<string>? Images { get; set; } = [];
+	}
 
     public sealed class SearchDestinationsHandler(IConfiguration configuration, 
-        TableServiceClient tableServiceClient) :
+        TableServiceClient tableServiceClient, BlobServiceClient blobServiceClient) :
        IRequestHandler<SearchDestinationsQuery, IResult>
     {
         private readonly IConfiguration _configuration = configuration;
 		private readonly TableServiceClient _tableServiceClient = tableServiceClient;
+		private readonly BlobServiceClient _blobServiceClient = blobServiceClient;
 
 		public async Task<IResult> Handle(SearchDestinationsQuery request,
             CancellationToken cancellationToken)
@@ -66,6 +68,24 @@ public sealed class SearchDestinations : ISlice
 			//var filteredDestinations = destinations.Where(d =>
 			//    request.SearchFor == null ||
 			//    d.Name.Contains(request.SearchFor));
+
+            if(destinations.Count == 0)
+            {
+                return Results.Ok();
+            }
+
+			var destinationsBlobClient = _blobServiceClient.GetBlobContainerClient("destination-images");
+
+            foreach (var destination in destinations)
+            {
+                var blobs = destinationsBlobClient.FindBlobsByTagsAsync($"DestinationIdentifier='{destination.Id}'", cancellationToken);
+
+				await foreach (var blob in blobs)
+                {
+                    var blobClient = destinationsBlobClient.GetBlobClient(blob.BlobName);
+                    destination.Images?.Add(blobClient.Uri.AbsoluteUri);
+                }
+            }
 
 			// return results, returning only the amount described in settings
 			return Results.Ok(destinations);
