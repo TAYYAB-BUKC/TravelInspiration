@@ -1,4 +1,7 @@
-﻿using MediatR;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using MediatR;
+using System.Text;
 using TravelInspiration.API.Shared.Slices;
 
 namespace TravelInspiration.API.Features.Destinations;
@@ -33,16 +36,61 @@ public class UpdateDestinationImages : ISlice
     }
 
 
-    public sealed class UpdateDestinationImagesCommandHandler(IConfiguration configuration) :
+	public sealed class UpdateDestinationImagesCommandHandler(IConfiguration configuration,
+		BlobServiceClient blobServiceClient) :
         IRequestHandler<UpdateDestinationImagesCommand, IResult>
     {
         private readonly IConfiguration _configuration = configuration;
- 
-        public Task<IResult> Handle(UpdateDestinationImagesCommand request,
+		private readonly BlobServiceClient _blobServiceClient = blobServiceClient;
+
+		public async Task<IResult> Handle(UpdateDestinationImagesCommand request,
             CancellationToken cancellationToken)
-        { 
-            // TODO implementation
-            return Task.FromResult(Results.Ok());
+        {
+			var destinationsBlobClient = _blobServiceClient.GetBlobContainerClient("destination-images");
+
+			foreach (var image in request.ImagesToUpdate)
+			{
+				var blobClient = destinationsBlobClient.GetBlobClient(image.Name);
+
+                if (!blobClient.Exists(cancellationToken).Value)
+                {
+                    using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(image.ImageBytes)))
+                    {
+                        await blobClient.UploadAsync(stream, new BlobUploadOptions()
+                        {
+                            Tags = new Dictionary<string, string>()
+                            {
+                                { "DestinationIdentifier", Convert.ToString(request.DestinationId) }
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    var blobTags = await blobClient.GetTagsAsync(cancellationToken: cancellationToken);
+
+                    if(blobTags.Value.Tags.TryGetValue("DestinationIdentifier", out var destinationId)
+                        && destinationId == request.DestinationId.ToString())
+                    {
+						using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(image.ImageBytes)))
+						{
+							await blobClient.UploadAsync(stream, new BlobUploadOptions()
+							{
+								Tags = new Dictionary<string, string>()
+							{
+								{ "DestinationIdentifier", Convert.ToString(request.DestinationId) }
+							}
+							});
+						}
+					}
+                    else
+                    {
+                        return Results.Problem();
+                    }
+                }
+			}
+
+			return Results.Ok();
         }
     }
 }
