@@ -1,7 +1,9 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Queues;
 using MediatR;
 using System.Text;
+using System.Text.Json;
 using TravelInspiration.API.Shared.Slices;
 
 namespace TravelInspiration.API.Features.Destinations;
@@ -37,16 +39,19 @@ public class UpdateDestinationImages : ISlice
 
 
 	public sealed class UpdateDestinationImagesCommandHandler(IConfiguration configuration,
-		BlobServiceClient blobServiceClient) :
+		BlobServiceClient blobServiceClient, QueueServiceClient queueServiceClient) :
         IRequestHandler<UpdateDestinationImagesCommand, IResult>
     {
         private readonly IConfiguration _configuration = configuration;
 		private readonly BlobServiceClient _blobServiceClient = blobServiceClient;
+		private readonly QueueServiceClient _queueServiceClient = queueServiceClient;
 
 		public async Task<IResult> Handle(UpdateDestinationImagesCommand request,
             CancellationToken cancellationToken)
         {
 			var destinationsBlobClient = _blobServiceClient.GetBlobContainerClient("destination-images");
+
+			var queueClient = _queueServiceClient.GetQueueClient("image-message-queue");
 
 			foreach (var image in request.ImagesToUpdate)
 			{
@@ -63,7 +68,15 @@ public class UpdateDestinationImages : ISlice
                                 { "DestinationIdentifier", Convert.ToString(request.DestinationId) }
                             }
                         });
-                    }
+
+                        var message = new
+                        {
+                            Action = "ImageBlobCreated",
+                            BlobName = image.Name,
+                        };
+
+                        await queueClient.SendMessageAsync(JsonSerializer.Serialize(message), cancellationToken);
+					}
                 }
                 else
                 {
@@ -81,6 +94,14 @@ public class UpdateDestinationImages : ISlice
 								{ "DestinationIdentifier", Convert.ToString(request.DestinationId) }
 							}
 							});
+
+							var message = new
+							{
+								Action = "ImageBlobUpdated",
+								BlobName = image.Name,
+							};
+
+							await queueClient.SendMessageAsync(JsonSerializer.Serialize(message), cancellationToken);
 						}
 					}
                     else
