@@ -1,10 +1,8 @@
-﻿using Azure;
-using Azure.Data.Tables;
+﻿using Azure.Data.Tables;
 using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Reflection;
 using TravelInspiration.API.Shared.Behaviours;
 using TravelInspiration.API.Shared.Metrics;
@@ -53,6 +51,11 @@ public static class ServiceCollectionExtensions
 		services.AddScoped(sp =>
 		{
 			return new BlobServiceClient(configuration.GetConnectionString("TravelInspirationTableStorageConnection"));
+		});
+
+		services.AddScoped(sp =>
+		{
+			return new QueueServiceClient(configuration.GetConnectionString("TravelInspirationTableStorageConnection"));
 		});
 
 		return services;
