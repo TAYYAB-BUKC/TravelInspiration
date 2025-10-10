@@ -59,7 +59,7 @@ public sealed class SearchDestinations : ISlice
 			{
 				destinations.Add(new DestinationDto
 				{
-					Id = d.GetInt32("Id") ?? -1,
+					Id = d.GetInt32("Identifier") ?? -1,
 					Name = d.GetString("Name")
 				});
 			}
