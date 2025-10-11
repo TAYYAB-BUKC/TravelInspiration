@@ -48,7 +48,10 @@ public static class ServiceCollectionExtensions
         };
 
 		services.AddDbContext<TravelInspirationDbContext>(options =>
-            options.UseSqlServer(sqlConnection));
+            options.UseSqlServer(sqlConnection, options =>
+            {
+                options.EnableRetryOnFailure();
+            }));
 
         services.AddScoped(sp =>
         {
