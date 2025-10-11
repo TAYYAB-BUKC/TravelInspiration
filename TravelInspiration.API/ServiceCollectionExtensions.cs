@@ -1,7 +1,9 @@
 ﻿using Azure.Data.Tables;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using FluentValidation;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using TravelInspiration.API.Shared.Behaviours;
@@ -35,10 +37,18 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection RegisterPersistenceServices(
         this IServiceCollection services,
         IConfiguration configuration)
-    { 
-        services.AddDbContext<TravelInspirationDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("TravelInspirationDbConnection")));
+    {
+        var defaultCredentials = new DefaultAzureCredential();
+
+        var accessTokenResponse = defaultCredentials.GetToken(new Azure.Core.TokenRequestContext(["https://database.windows.net/.default"]));
+
+        var sqlConnection = new SqlConnection(configuration.GetConnectionString("TravelInspirationDbConnection"))
+        {
+            AccessToken = accessTokenResponse.Token
+        };
+
+		services.AddDbContext<TravelInspirationDbContext>(options =>
+            options.UseSqlServer(sqlConnection));
 
         services.AddScoped(sp =>
         {
