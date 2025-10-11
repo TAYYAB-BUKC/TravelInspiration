@@ -1,13 +1,12 @@
 {
   "dependencies": {
-    "mssql1": {
-      "ignored": "true",
-      "type": "mssql",
-      "connectionId": "ConnectionStrings:TravelInspirationDbConnection"
-    },
     "storage1": {
       "type": "storage",
       "connectionId": "ConnectionStrings:TravelInspirationTableStorageConnection"
+    },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:TravelInspirationDbConnection"
     }
   }
 }
