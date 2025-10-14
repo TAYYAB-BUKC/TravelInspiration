@@ -19,8 +19,10 @@ namespace TravelInspiration.API.Itineraries
 
         [Function("GetItinerariesFunction")]
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "itineraries")] HttpRequest req,
-			[SqlInput(commandText: "SELECT Id, Name, Description, UserId FROM Itineraries WITH (NOLOCK)", 
-                      commandType: CommandType.Text, parameters: "", connectionStringSetting: "TravelInspirationDbConnection")] IEnumerable<ItineraryDto> itineraries)
+			[SqlInput(commandText: "SELECT Id, Name, Description, UserId FROM Itineraries WITH (NOLOCK)" +
+								   //"\nWHERE NAME LIKE @searchFor" // Not Working
+								   "\nWHERE NAME = @searchFor", // Working
+					  commandType: CommandType.Text, parameters: "@searchFor={Query.searchFor}", connectionStringSetting: "TravelInspirationDbConnection")] IEnumerable<ItineraryDto> itineraries)
         {
             _logger.LogInformation("C# HTTP trigger function processed a itineraries request.");
             return new OkObjectResult(itineraries);
