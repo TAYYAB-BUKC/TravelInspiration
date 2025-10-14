@@ -5,17 +5,17 @@ using Microsoft.Extensions.Logging;
 
 namespace TravelInspiration.API.Itineraries
 {
-    public class Function1
-    {
-        private readonly ILogger<Function1> _logger;
+    public class GetItinerariesFunction
+	{
+        private readonly ILogger<GetItinerariesFunction> _logger;
 
-        public Function1(ILogger<Function1> logger)
+        public GetItinerariesFunction(ILogger<GetItinerariesFunction> logger)
         {
             _logger = logger;
         }
 
-        [Function("Function1")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        [Function("GetItinerariesFunction")]
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "itineraries")] HttpRequest req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
             return new OkObjectResult("Welcome to Azure Functions!");
