@@ -9,41 +9,41 @@ using System.Threading;
 using TravelInspiration.API.Itineraries.Models;
 using TravelInspiration.API.Itineraries.Persistence;
 
-namespace TravelInspiration.API.Itineraries
+namespace TravelInspiration.API.Itineraries.Functions
 {
 	public class GetItinerariesFunction
 	{
-        private readonly ILogger<GetItinerariesFunction> _logger;
+		private readonly ILogger<GetItinerariesFunction> _logger;
 		private readonly TravelInspirationDbContext _dbContext;
 		private readonly IConfiguration _configuration;
 
 		public GetItinerariesFunction(ILogger<GetItinerariesFunction> logger, TravelInspirationDbContext dbContext, IConfiguration configuration)
-        {
-            _logger = logger;
+		{
+			_logger = logger;
 			_dbContext = dbContext;
 			_configuration = configuration;
 		}
 
-        [Function("GetItinerariesFunction")]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "itineraries")] HttpRequest req)
-        {
-            _logger.LogInformation("C# HTTP trigger function processed a itineraries request.");
+		[Function("GetItinerariesFunction")]
+		public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "itineraries")] HttpRequest req)
+		{
+			_logger.LogInformation("C# HTTP trigger function processed a itineraries request.");
 
-            var searchForValue = Convert.ToString(req.Query["searchFor"]);
+			var searchForValue = Convert.ToString(req.Query["searchFor"]);
 
-			if(!int.TryParse(_configuration["MaxAmountOfItinerariesToReturn"], out int maxAmountOfItinerariesToReturn))
+			if (!int.TryParse(_configuration["MaxAmountOfItinerariesToReturn"], out int maxAmountOfItinerariesToReturn))
 			{
 				throw new Exception("MaxAmountOfItinerariesToReturn setting is missing");
 			}
 
 			var itineraries = await _dbContext.Itineraries
-							         .Where(i =>
-							         searchForValue == null ||
-							         i.Name.Contains(searchForValue) ||
-							         (i.Description != null && i.Description.Contains(searchForValue)))
-							         .AsNoTracking()
+									 .Where(i =>
+									 searchForValue == null ||
+									 i.Name.Contains(searchForValue) ||
+									 i.Description != null && i.Description.Contains(searchForValue))
+									 .AsNoTracking()
 									 .Take(maxAmountOfItinerariesToReturn)
-							         .ToListAsync();
+									 .ToListAsync();
 
 			var itinerariesDto = itineraries.Select(i => new ItineraryDto
 			{
@@ -54,6 +54,6 @@ namespace TravelInspiration.API.Itineraries
 			});
 
 			return new OkObjectResult(itinerariesDto);
-        }
-    }
+		}
+	}
 }
