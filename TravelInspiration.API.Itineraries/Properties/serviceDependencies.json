@@ -3,9 +3,15 @@
     "appInsights1": {
       "type": "appInsights"
     },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:TravelInspirationDbConnection",
+      "dynamicId": null
+    },
     "storage1": {
       "type": "storage",
-      "connectionId": "AzureWebJobsStorage"
+      "connectionId": "AzureWebJobsStorage",
+      "dynamicId": null
     }
   }
 }
