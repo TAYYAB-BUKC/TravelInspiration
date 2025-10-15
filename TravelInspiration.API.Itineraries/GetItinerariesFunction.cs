@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using TravelInspiration.API.Itineraries.Models;
@@ -14,11 +15,13 @@ namespace TravelInspiration.API.Itineraries
 	{
         private readonly ILogger<GetItinerariesFunction> _logger;
 		private readonly TravelInspirationDbContext _dbContext;
+		private readonly IConfiguration _configuration;
 
-		public GetItinerariesFunction(ILogger<GetItinerariesFunction> logger, TravelInspirationDbContext dbContext)
+		public GetItinerariesFunction(ILogger<GetItinerariesFunction> logger, TravelInspirationDbContext dbContext, IConfiguration configuration)
         {
             _logger = logger;
 			_dbContext = dbContext;
+			_configuration = configuration;
 		}
 
         [Function("GetItinerariesFunction")]
@@ -28,12 +31,18 @@ namespace TravelInspiration.API.Itineraries
 
             var searchForValue = Convert.ToString(req.Query["searchFor"]);
 
+			if(!int.TryParse(_configuration["MaxAmountOfItinerariesToReturn"], out int maxAmountOfItinerariesToReturn))
+			{
+				throw new Exception("MaxAmountOfItinerariesToReturn setting is missing");
+			}
+
 			var itineraries = await _dbContext.Itineraries
 							         .Where(i =>
 							         searchForValue == null ||
 							         i.Name.Contains(searchForValue) ||
 							         (i.Description != null && i.Description.Contains(searchForValue)))
 							         .AsNoTracking()
+									 .Take(maxAmountOfItinerariesToReturn)
 							         .ToListAsync();
 
 			var itinerariesDto = itineraries.Select(i => new ItineraryDto
