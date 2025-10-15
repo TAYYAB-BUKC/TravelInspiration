@@ -25,7 +25,7 @@ namespace TravelInspiration.API.Itineraries
 		}
 
         [Function("GetItinerariesFunction")]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "itineraries")] HttpRequest req)
+        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "itineraries")] HttpRequest req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a itineraries request.");
 
