@@ -1,4 +1,7 @@
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +15,17 @@ var host = new HostBuilder()
 		services.AddApplicationInsightsTelemetryWorkerService();
 		services.ConfigureFunctionsApplicationInsights();
 
+		var defaultAzureCredentials = new DefaultAzureCredential();
+
+		var accessTokenResponse = defaultAzureCredentials.GetToken(new TokenRequestContext(["https://database.windows.azure.net"]));
+
+		var connection = new SqlConnection(builder.Configuration.GetConnectionString("TravelInspirationDbConnection"))
+		{
+			AccessToken = accessTokenResponse.Token
+		};
+
 		services.AddDbContext<TravelInspirationDbContext>(options =>
-			options.UseSqlServer(builder.Configuration.GetConnectionString("TravelInspirationDbConnection"), options =>
+			options.UseSqlServer(connection, options =>
 			{
 				options.EnableRetryOnFailure();
 			}));
