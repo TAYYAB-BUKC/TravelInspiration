@@ -17,7 +17,7 @@ var host = new HostBuilder()
 
 		var defaultAzureCredentials = new DefaultAzureCredential();
 
-		var accessTokenResponse = defaultAzureCredentials.GetToken(new TokenRequestContext(["https://database.windows.azure.net"]));
+		var accessTokenResponse = defaultAzureCredentials.GetToken(new TokenRequestContext(["https://database.windows.net/.default"]));
 
 		var connection = new SqlConnection(builder.Configuration.GetConnectionString("TravelInspirationDbConnection"))
 		{
