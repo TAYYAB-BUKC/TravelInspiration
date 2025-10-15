@@ -45,7 +45,7 @@ namespace TravelInspiration.API.Itineraries.Functions
 				return new List<ItineraryDto>();
 			}
 
-            var mostviewedItineraries = JsonSerializer.Deserialize<List<ItineraryDto>>(createMostViewedItinerariesResponse.Content);
+			var mostviewedItineraries = JsonSerializer.Deserialize<List<ItineraryDto>>(createMostViewedItinerariesResponse.Content, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
 			return mostviewedItineraries;
         }
