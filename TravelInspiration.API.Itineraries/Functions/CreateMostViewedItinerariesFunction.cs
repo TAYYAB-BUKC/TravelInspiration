@@ -20,13 +20,14 @@ namespace TravelInspiration.API.Itineraries.Functions
         [Function("CreateMostViewedItinerariesFunction")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "mostvieweditineraries")] HttpRequest req)
         {
-            if(req.Body.Length <= 0)
-            {
-                throw new Exception("Request body is missing");
-            }
-            
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var itineraries = JsonSerializer.Deserialize<List<ItineraryDto>>(requestBody);
+
+			if (string.IsNullOrWhiteSpace(requestBody))
+			{
+				throw new Exception("Request body is missing");
+			}
+
+            var itineraries = JsonSerializer.Deserialize<List<ItineraryDto>>(requestBody, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             
             return new OkObjectResult(new
             {
