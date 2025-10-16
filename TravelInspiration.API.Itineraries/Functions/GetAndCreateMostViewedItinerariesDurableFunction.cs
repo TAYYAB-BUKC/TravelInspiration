@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker.Extensions.DurableTask.Http;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
@@ -10,15 +11,19 @@ using TravelInspiration.API.Itineraries.Models;
 
 namespace TravelInspiration.API.Itineraries.Functions
 {
-	public static class GetAndCreateMostViewedItinerariesDurableFunction
+	public class GetAndCreateMostViewedItinerariesDurableFunction(IConfiguration configuration)
     {
-        [Function(nameof(GetAndCreateMostViewedItinerariesDurableFunction))]
-        public static async Task<List<ItineraryDto>> RunOrchestrator(
+		private readonly IConfiguration _configuration = configuration;
+
+		[Function(nameof(GetAndCreateMostViewedItinerariesDurableFunction))]
+        public async Task<ItineraryDto> RunOrchestrator(
             [OrchestrationTrigger] TaskOrchestrationContext context)
         {
             var hostAddress = context.GetInput<string>();
+            var getItinerariesFunctionKey = _configuration["GetItinerariesFunctionKey"];
+			var createMostViewedItinerariesFunctionKey = _configuration["CreateMostViewedItinerariesFunctionKey"];
 
-            var httpRetryOptions = new HttpRetryOptions()
+			var httpRetryOptions = new HttpRetryOptions()
             {
                 MaxNumberOfAttempts = 5,
                 FirstRetryInterval = TimeSpan.FromSeconds(5),
@@ -26,32 +31,32 @@ namespace TravelInspiration.API.Itineraries.Functions
 
 			var getItinerariesResponse = await context.CallHttpAsync(
                 HttpMethod.Get,
-                new Uri($"{hostAddress}/itineraries"),
+                new Uri($"{hostAddress}/itineraries?code{getItinerariesFunctionKey}"),
                 retryOptions: httpRetryOptions);
 
             if(getItinerariesResponse.StatusCode != HttpStatusCode.OK)
             {
-                return new List<ItineraryDto>();
+                return null!;
             }
 
 			var createMostViewedItinerariesResponse = await context.CallHttpAsync(
 				HttpMethod.Post,
-				new Uri($"{hostAddress}/mostvieweditineraries"),
+				new Uri($"{hostAddress}/mostvieweditineraries?code{createMostViewedItinerariesFunctionKey}"),
 				getItinerariesResponse.Content,
 				retryOptions: httpRetryOptions);
 
 			if (createMostViewedItinerariesResponse.StatusCode != HttpStatusCode.OK)
 			{
-				return new List<ItineraryDto>();
+				return null!;
 			}
 
-			var mostviewedItineraries = JsonSerializer.Deserialize<List<ItineraryDto>>(createMostViewedItinerariesResponse.Content, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+			var mostviewedItinerary = JsonSerializer.Deserialize<ItineraryDto>(createMostViewedItinerariesResponse.Content, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
-			return mostviewedItineraries;
+			return mostviewedItinerary;
         }
 
         [Function("GetAndCreateMostViewedItinerariesDurableFunction_HttpStart")]
-        public static async Task<HttpResponseData> HttpStart(
+        public async Task<HttpResponseData> HttpStart(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "generatemostvieweditineraries")] HttpRequestData req,
             [DurableClient] DurableTaskClient client,
             FunctionContext executionContext)

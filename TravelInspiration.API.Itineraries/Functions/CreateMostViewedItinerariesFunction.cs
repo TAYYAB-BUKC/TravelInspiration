@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using System.Net;
 using System.Text.Json;
 using TravelInspiration.API.Itineraries.Models;
 
@@ -29,11 +28,7 @@ namespace TravelInspiration.API.Itineraries.Functions
 
             var itineraries = JsonSerializer.Deserialize<List<ItineraryDto>>(requestBody, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             
-            return new OkObjectResult(new
-            {
-                StatusCode = HttpStatusCode.OK,
-                Items = itineraries?.FirstOrDefault()
-            });
+            return new OkObjectResult(itineraries?.FirstOrDefault());
         }
     }
 }
