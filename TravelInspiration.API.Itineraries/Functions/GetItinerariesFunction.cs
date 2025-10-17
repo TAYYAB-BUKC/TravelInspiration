@@ -2,9 +2,12 @@ using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using System.Net;
 using System.Threading;
 using TravelInspiration.API.Itineraries.Models;
 using TravelInspiration.API.Itineraries.Persistence;
@@ -25,6 +28,9 @@ namespace TravelInspiration.API.Itineraries.Functions
 		}
 
 		[Function("GetItinerariesFunction")]
+		[OpenApiOperation("GetItineraries", "GetItineraries", Description = "Get the Itineraries.")]
+		[OpenApiParameter("SearchFor", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "Search for the Itineraries by part of their name or description.")]
+		[OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<ItineraryDto>))]
 		public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "itineraries")] HttpRequest req)
 		{
 			_logger.LogInformation("C# HTTP trigger function processed a itineraries request.");
