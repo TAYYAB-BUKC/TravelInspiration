@@ -40,7 +40,9 @@ var host = new HostBuilder()
 				Info = new OpenApiInfo()
 				{
 					Title = "Travel Inspiration Function App",
-					Description = "All Travel Inspiration API endpoints that have migrated to Function App"
+					Description = "All Travel Inspiration API endpoints that have migrated to Function App",
+					Version = "v1"
+
 				}
 			};
 		});
