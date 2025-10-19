@@ -1,5 +1,6 @@
 ﻿using Azure.Data.Tables;
 using Azure.Identity;
+using Azure.Messaging.EventGrid;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using FluentValidation;
@@ -69,6 +70,11 @@ public static class ServiceCollectionExtensions
 		services.AddScoped(sp =>
 		{
 			return new QueueServiceClient(configuration.GetConnectionString("TravelInspirationTableStorageConnection"));
+		});
+
+		services.AddScoped(sp =>
+		{
+			return new EventGridPublisherClient(new Uri(configuration["EventGridTopicEndpoint_ImageCreatedOrUpdated"]), defaultCredentials);
 		});
 
 		return services;
