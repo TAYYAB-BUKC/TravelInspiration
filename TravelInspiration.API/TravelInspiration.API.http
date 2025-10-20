@@ -49,3 +49,9 @@ Accept: application/json
 ### With Sepcific Columns
 GET https://devstdevcutravel.table.core.windows.net/Destinations?$select=Identifier,Name&sp=r&st=2025-10-08T11:26:53Z&se=2025-10-08T19:41:53Z&spr=https&sv=2024-11-04&sig=RKwRYnyxWRvYndRYK%2BL2b1yyS4oCCUDLQmMPftcyE6U%3D&tn=Destinations
 Accept: application/json
+
+
+###
+GET https://appdev-apim-dev-cu-apis.azure-api.net/travel-inspiration-app-service/destinations
+Accept: application/json
+Ocp-Apim-Subscription-Key: f09400c787434e48a6b4686837875d3b
