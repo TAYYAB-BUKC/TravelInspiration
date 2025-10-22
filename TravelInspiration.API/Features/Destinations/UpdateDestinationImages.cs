@@ -39,19 +39,19 @@ public class UpdateDestinationImages : ISlice
 
 
 	public sealed class UpdateDestinationImagesCommandHandler(IConfiguration configuration,
-		BlobServiceClient blobServiceClient, QueueServiceClient queueServiceClient) :
+		BlobServiceClient blobServiceClient) : //, QueueServiceClient queueServiceClient) :
         IRequestHandler<UpdateDestinationImagesCommand, IResult>
     {
         private readonly IConfiguration _configuration = configuration;
 		private readonly BlobServiceClient _blobServiceClient = blobServiceClient;
-		private readonly QueueServiceClient _queueServiceClient = queueServiceClient;
+		//private readonly QueueServiceClient _queueServiceClient = queueServiceClient;
 
 		public async Task<IResult> Handle(UpdateDestinationImagesCommand request,
             CancellationToken cancellationToken)
         {
 			var destinationsBlobClient = _blobServiceClient.GetBlobContainerClient("destination-images");
 
-			var queueClient = _queueServiceClient.GetQueueClient("image-message-queue");
+			//var queueClient = _queueServiceClient.GetQueueClient("image-message-queue");
 
 			foreach (var image in request.ImagesToUpdate)
 			{
@@ -69,13 +69,13 @@ public class UpdateDestinationImages : ISlice
                             }
                         });
 
-                        var message = new
-                        {
-                            Action = "ImageBlobCreated",
-                            BlobName = image.Name,
-                        };
+                        //var message = new
+                        //{
+                        //    Action = "ImageBlobCreated",
+                        //    BlobName = image.Name,
+                        //};
 
-                        await queueClient.SendMessageAsync(JsonSerializer.Serialize(message), cancellationToken);
+                        //await queueClient.SendMessageAsync(JsonSerializer.Serialize(message), cancellationToken);
 					}
                 }
                 else
@@ -95,13 +95,13 @@ public class UpdateDestinationImages : ISlice
 							}
 							});
 
-							var message = new
-							{
-								Action = "ImageBlobUpdated",
-								BlobName = image.Name,
-							};
+							//var message = new
+							//{
+							//	Action = "ImageBlobUpdated",
+							//	BlobName = image.Name,
+							//};
 
-							await queueClient.SendMessageAsync(JsonSerializer.Serialize(message), cancellationToken);
+							//await queueClient.SendMessageAsync(JsonSerializer.Serialize(message), cancellationToken);
 						}
 					}
                     else
