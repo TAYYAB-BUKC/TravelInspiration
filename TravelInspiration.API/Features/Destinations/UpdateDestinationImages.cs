@@ -1,9 +1,12 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Messaging;
+using Azure.Messaging.EventGrid;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using MediatR;
 using System.Text;
 using System.Text.Json;
+using TravelInspiration.API.Shared.Domain.Models;
 using TravelInspiration.API.Shared.Slices;
 
 namespace TravelInspiration.API.Features.Destinations;
@@ -39,11 +42,13 @@ public class UpdateDestinationImages : ISlice
 
 
 	public sealed class UpdateDestinationImagesCommandHandler(IConfiguration configuration,
-		BlobServiceClient blobServiceClient) : //, QueueServiceClient queueServiceClient) :
+		BlobServiceClient blobServiceClient, EventGridPublisherClient eventGridPublisherClient) : //, QueueServiceClient queueServiceClient) :
         IRequestHandler<UpdateDestinationImagesCommand, IResult>
     {
         private readonly IConfiguration _configuration = configuration;
 		private readonly BlobServiceClient _blobServiceClient = blobServiceClient;
+		private readonly EventGridPublisherClient _eventGridPublisherClient = eventGridPublisherClient;
+
 		//private readonly QueueServiceClient _queueServiceClient = queueServiceClient;
 
 		public async Task<IResult> Handle(UpdateDestinationImagesCommand request,
@@ -109,6 +114,18 @@ public class UpdateDestinationImages : ISlice
                         return Results.Problem();
                     }
                 }
+
+                var imageCloudEvent = new CloudEvent(
+                    $"destinations/{request.DestinationId}/images/{image.Name}",
+                    "com.travelinspiration.destination-created-or-updated",
+                    new { BlobName = image.Name, DestinationId = request.DestinationId }
+                    )
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Time = DateTimeOffset.Now
+                };
+
+                await _eventGridPublisherClient.SendEventAsync(imageCloudEvent);
 			}
 
 			return Results.Ok();
